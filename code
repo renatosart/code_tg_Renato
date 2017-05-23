@@ -1,81 +1,90 @@
-/batch,list
+
 /title, Piezoelectric Beam
 /nopr
-/com,
-/PREP7
+
+/PREP7 !Pre-processamento
 !
-!  Define problem parameters
+!  Definicao dos parametros
 !
-!   - Geometry
+!   - Geometria
 !
-Lbeam  =  100.0e-3                        ! Length beam, m
-Hbeam  =    0.5e-3                        ! Beam thickness, m
-Hpzt   =    0.5e-3			  ! PZT thickness, m
-Dpzt   =   10.0e-3			  ! Length from support, m
-Lpzt   =   10.0e-3			  ! Length pzt, m
+Lbeam  =  100.0e-3        ! Comprimento da viga, m
+Hbeam  =    0.5e-3        ! Espessura da viga, m
+Hpzt   =    0.5e-3			  ! Espessura do PZT, m
+Dpzt   =   10.0e-3			  ! distanci do PZT ao engaste, m
+Lpzt   =   10.0e-3			  ! Comprimento do PZT, m
 !
-!   - Loading
+!   - Carregamento
 !
-V=100                           ! Electrode voltage, Volt
-Uy=10.e-3                       ! Tip displacement, m
+V=100                           ! Voltagem doeletrodo, Volt
+Uy=10.e-3                       ! Deflexao na ponta da viga, m
 !
-!   - Material properties for PVDF 
+!   - Propriedades materiais do PVDF 
 !
-E1=2.0e9                        ! Young's modulus, N/m^2 
-NU12=0.29                       ! Poisson's ratio
-G12=0.775e9                     ! Shear modulus, N/m^2 
-d31=2.2e-11                     ! Piezoelectric strain coefficients, C/N
+E1=2.0e9                        ! Modulo de Elasticidade, N/m^2 
+NU12=0.29                       ! Coeficiente de Poisson
+G12=0.775e9                     ! Modulo de cisalhamento, N/m^2 
+d31=2.2e-11                     ! Coeficientes de tensao piezoeletrica, C/N
 d32=0.3e-11
 d33=-3.0e-11
-ept33=12                        ! Relative permittivity at constant stress 
+ept33=12                        ! Permissividade eletrica relativa com tensao constante 
+
 !
-! Finite element model of the piezoelectric bimorph beam
+! Modelo de Elementos finitos
 !
-local,11                        ! Coord. system 
-rect,Dpzt,Lpzt+Dpzt,-Hbeam,-Hbeam-Hpzt                   ! Create area for lower layer
-rect,   0,    Lbeam,     0,      Hbeam                   ! Create area for beam
-rect,Dpzt,Lpzt+Dpzt,     0,       Hpzt                   ! Create area for upper layer
-aglue,all                                                ! Glue layers
-esize,Hpzt                                               ! Specify the element length
+
+local,11                                   ! Sistema de coordenadas
+rectng,Dpzt,Lpzt+Dpzt,-Hpzt,         0     ! Area para o PZT inferior
+rectng,   0,    Lbeam,    0,     Hbeam     ! Area para a viga
+rectng,Dpzt,Lpzt+Dpzt,Hbeam,Hbeam+Hpzt     ! Area para o PZT superior
+aglue,all                                  ! Juncao das areas
+esize,Hpzt                                 ! Tamanho do elemento utilizado
 
 
 
-et,1,PLANE223,1001,,0           ! 2-D piezoelectric element, plane stress
-tb,ANEL,1,,,1                   ! Elastic compliance matrix
+et,1,PLANE223,1001,,0           ! Elemento 2D piezoeletrico, Estado plano de tensao
+tb,ANEL,1,,,1                   ! Matriz de compliance elastica
 tbda,1,1/E1,-NU12/E1,-NU12/E1
 tbda,7,1/E1,-NU12/E1
 tbda,12,1/E1
 tbda,16,1/G12
-tb,PIEZ,1,,,1                   ! Piezoelectric strain matrix
+tb,PIEZ,1,,,1                   ! Matriz de tensao piezoeletrica
 tbda,2,d31
 tbda,5,d33
 tbda,8,d32
-tb,DPER,1,,,1                   ! Permittivity at constant stress
+tb,DPER,1,,,1                   ! Permissividade a tensao constante
 tbdata,1,ept33,ept33
-tblist,all                      ! List input and converted material matrices
+tblist,all                      ! Listagem das matrizes
 !
-!   - Material properties for Beam 
+!   - Propriedades materiais da viga 
 !
-et,2,PLANE183			! 2-D structural element, plane stress
-mp,DENS,2,1e3
-mp,EX,2,1e9
-mp,NUXY,2,0.3
+et,2,PLANE183			! Elemento estrutural 2D, Estado plano de tensao
+mp,DENS,2,1e3     ! Densidade, kg/m3
+mp,EX,2,1e9       ! Modulo de Elasticidade, N/m2
+mp,NUXY,2,0.3     ! Coeficiente de Poisson
 
 
-type,1 
-amesh,1                         ! Generate mesh within the lower layer
-type,1             
-amesh,3                         ! Generate mesh within the upper layer
+type,1            ! Atribui o elemento tipo 1 (piezoeletrico)
+amesh,1,3         ! Gera a malha de area para os dois dominios de PZT
+type,2            ! Atribui o elemento tipo 2 (estrutural)
+amesh,4           ! Gera a malha para a viga
 
 !
-!   - Boundary conditions
+!   - Condicoes de contorno
 !
-nsel,s,loc,x,0                  !Engaste da viga
-d,all,ux,0
-d,all,uy,0
-nsel,all
 
-nsel,s,loc,y,0
+!Engaste da viga
+nsel,s,loc,x,0    ! Seleciona os nos
+d,all,ux,0        ! Atribui deflexao nula na direcao x
+d,all,uy,0        ! Atribui deflexao nula na direcao y
+nsel,all          ! Reseleciona todos os nos
+
+nsel,s,loc,y,Hbeam                  
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
 d,all,volt,0
 
+/SOLU
+antype,modal
+modopt,QRDAMP,4
+solve
+fini
