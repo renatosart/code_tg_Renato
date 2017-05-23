@@ -72,4 +72,5 @@ amesh,3                         ! Generate mesh within the upper layer
 !
 nsel,s,loc,x,0
 d,all,ux,0
+d,all,uy,0
 
