@@ -70,7 +70,12 @@ amesh,3                         ! Generate mesh within the upper layer
 !
 !   - Boundary conditions
 !
-nsel,s,loc,x,0
+nsel,s,loc,x,0                  !Engaste da viga
 d,all,ux,0
 d,all,uy,0
+nsel,all
+
+nsel,s,loc,y,0
+nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+d,all,volt,0
 
