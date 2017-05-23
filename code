@@ -62,9 +62,9 @@ mp,EX,2,1e9
 mp,NUXY,2,0.3
 
 
-type,1 $ esys,11
+type,1 
 amesh,1                         ! Generate mesh within the lower layer
-type,1 $ esys,11             
+type,1             
 amesh,3                         ! Generate mesh within the upper layer
 
 !
