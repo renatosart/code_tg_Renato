@@ -43,6 +43,7 @@ esize,Hpzt                                 ! Tamanho do elemento utilizado
 
 
 et,1,PLANE223,1001,,0           ! Elemento 2D piezoeletrico, Estado plano de tensao
+mp,DENS,1,1e3                   ! Densidade, kg/m3
 tb,ANEL,1,,,1                   ! Matriz de compliance elastica
 tbda,1,1/E1,-NU12/E1,-NU12/E1
 tbda,7,1/E1,-NU12/E1
@@ -79,14 +80,37 @@ d,all,ux,0        ! Atribui deflexao nula na direcao x
 d,all,uy,0        ! Atribui deflexao nula na direcao y
 nsel,all          ! Reseleciona todos os nos
 
-nsel,s,loc,y,Hbeam                  
-nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-d,all,volt,0
-nsel,all
+!nsel,s,loc,y,Hbeam                  
+!nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+!d,all,volt,0
+!nsel,all
 
 /SOLU
 antype,modal
-modopt,QRDAMP,4
+modopt,lanb,4
+mxpand,4
 solve
 fini
 
+/post1
+set,list,2
+set,first
+*get,FREQ1,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+anmode,10,.5e-1 ! uncomment to animate the displacement
+set,next
+*get,FREQ2,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+anmode,10,.5e-1 ! uncomment to animate the displacement
+set,next
+*get,FREQ3,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+anmode,10,.5e-1 ! uncomment to animate the displacement
+set,next
+*get,FREQ4,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+anmode,10,.5e-1 ! uncomment to animate the displacement
+set,next
+*get,FREQ5,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+anmode,10,.5e-1 ! uncomment to animate the displacement
