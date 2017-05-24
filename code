@@ -82,9 +82,11 @@ nsel,all          ! Reseleciona todos os nos
 nsel,s,loc,y,Hbeam                  
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
 d,all,volt,0
+nsel,all
 
 /SOLU
 antype,modal
 modopt,QRDAMP,4
 solve
 fini
+
