@@ -1,4 +1,3 @@
-
 /title, Piezoelectric Beam
 /nopr
 
@@ -11,12 +10,12 @@
 Lbeam  =  100.0e-3        ! Comprimento da viga, m
 Hbeam  =    0.5e-3        ! Espessura da viga, m
 Hpzt   =    0.5e-3			  ! Espessura do PZT, m
-Dpzt   =   10.0e-3			  ! distanci do PZT ao engaste, m
+Dpzt   =   10.0e-3			  ! distancia do PZT ao engaste, m
 Lpzt   =   10.0e-3			  ! Comprimento do PZT, m
 !
 !   - Carregamento
 !
-V=100                           ! Voltagem doeletrodo, Volt
+V=100                           ! Voltagem do eletrodo, Volt
 Uy=10.e-3                       ! Deflexao na ponta da viga, m
 !
 !   - Propriedades materiais do PVDF 
@@ -76,41 +75,82 @@ amesh,4           ! Gera a malha para a viga
 
 !Engaste da viga
 nsel,s,loc,x,0    ! Seleciona os nos
+cm,Suporte,node
 d,all,ux,0        ! Atribui deflexao nula na direcao x
 d,all,uy,0        ! Atribui deflexao nula na direcao y
 nsel,all          ! Reseleciona todos os nos
 
-!nsel,s,loc,y,Hbeam                  
-!nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-!d,all,volt,0
-!nsel,all
+!Voltagem nula na superficie de contato superior
+nsel,s,loc,y,Hbeam                  
+nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+d,all,volt,0
+nsel,all
+
+!Voltagem nula na superficie de contato inferior
+nsel,s,loc,y,0                  
+nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+d,all,volt,0
+nsel,all
+
+!Selecao para voltagem de controle
+nsel,s,loc,y,Hbeam+Hpzt                  
+nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+cm,Vcont,node
+nsel,all
+
+!Selecao para a forca aplicada na extremidade
+nsel,s,loc,x,Lbeam
+nsel,r,loc,y,Hbeam
+cm,Ftip,node
+nsel,all
+
+!Selecao para voltagem de controle
+nsel,s,loc,y,-Hpzt                  
+nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+cm,Vsensor,node
+nsel,all
+
+finish
 
 /SOLU
 antype,modal
 modopt,lanb,4
 mxpand,4
+outres,all
+solve
+finish
+
+/post1
+set,list
+set,first
+*get,FREQ1,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+set,next
+*get,FREQ2,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+set,next
+*get,FREQ3,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+set,next
+*get,FREQ4,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+set,next
+*get,FREQ5,active,0,set,freq
+pldisp,0 ! uncomment to plot the displacement
+fini
+
+/SOLU 
+antype,static,new
+cmsel,s,Ftip
+F,all,FY,-1     !Forca em N
+nsel,all
+nlgeom,on ! Activate large deflections
+nsubs,2 ! Set number of substeps
+cnvtol,F,1.e-3,1.e-3 ! Set convergence for force
+cnvtol,CHRG,1.e-8,1.e-3 ! Set convergence for charge
 solve
 fini
 
 /post1
-set,list,2
-set,first
-*get,FREQ1,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
-anmode,10,.5e-1 ! uncomment to animate the displacement
-set,next
-*get,FREQ2,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
-anmode,10,.5e-1 ! uncomment to animate the displacement
-set,next
-*get,FREQ3,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
-anmode,10,.5e-1 ! uncomment to animate the displacement
-set,next
-*get,FREQ4,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
-anmode,10,.5e-1 ! uncomment to animate the displacement
-set,next
-*get,FREQ5,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
-anmode,10,.5e-1 ! uncomment to animate the displacement
+plnsol,volt,,0
+fini
