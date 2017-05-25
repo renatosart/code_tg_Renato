@@ -84,10 +84,10 @@ nsel,s,loc,y,Hbeam+Hpzt                    ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
 cm,Vcont,node                              ! Reune a selecao de nos no parametro Vcont
 nsel,all                                   ! Reseleciona todos os nos
-!Selecao para a forca aplicada na extremidade
+!Selecao para a extremidade
 nsel,s,loc,x,Lbeam                         ! Seleciona os nos
 nsel,r,loc,y,Hbeam
-cm,Ftip,node                               ! Reune a selecao de nos no parametro Ftip
+cm,Tip,node                               ! Reune a selecao de nos no parametro Tip
 nsel,all                                   ! Reseleciona todos os nos
 !Selecao para voltagem no sensor na superficie inferior
 nsel,s,loc,y,-Hpzt                         ! Seleciona os nos
@@ -95,7 +95,9 @@ nsel,r,loc,x,Dpzt,Dpzt+Lpzt
 cm,Vsensor,node                            ! Reune a selecao de nos no parametro Vsensor
 nsel,all                                   ! Reseleciona todos os nos
 finish
-
+!
+!   - Analise modal
+!
 /SOLU                                      ! Analise modal para obtencao das frequencias e modos de vibracao
 antype,modal                               ! Utilizada para definir o passo de integracao na analise transiente
 modopt,lanb,4                              ! Extracao dos 4 primeiros modos de vibracao
@@ -103,7 +105,9 @@ mxpand,4
 outres,all
 solve
 finish
-
+!
+!   - Pos-processamento da analise modal
+!
 /post1
 set,list                                   ! Lista as frequencias associadas aos modos
 set,first
@@ -119,10 +123,12 @@ set,next
 *get,FREQ4,active,0,set,freq               ! Atribui a frequencia para a variavel FREQ4
 pldisp,0                                   ! Plotagem do quarto modo
 fini
-
+!
+!   - Analise Estatica
+!
 /SOLU                                      ! Analise estatica para checar a voltagem no sensor
 antype,static,new
-cmsel,s,Ftip                               ! Seleciona os nos no conjunto Ftip
+cmsel,s,Tip                                ! Seleciona os nos no conjunto Tip
 F,all,FY,-1                                ! Forca aplicada na direcao Y com 1N
 nsel,all                                   ! Reseleciona os nos
 nlgeom,on                                  ! Ativa o modo para calculo em grandes deflexoes
@@ -131,9 +137,14 @@ cnvtol,F,1.e-3,1.e-3                       ! Limite para a convergencia da forca
 cnvtol,CHRG,1.e-8,1.e-3                    ! Limite para a convergencia da carga eletrica
 solve
 fini
-
+!
+!   - Pos-processamento da analise estatica
+!
 /post1
 plnsol,volt,,0                             ! Plota o contorno da deformacao com a voltagem gerada no PZT
 fini
+!
+!   - Analise transiente
+!
 
 
