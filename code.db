@@ -24,7 +24,7 @@ d32=0.3e-11
 d33=-3.0e-11
 ept33=12                                   ! Permissividade eletrica relativa com tensao constante 
 !
-!   - Matrizes necessarias ao PZT 
+!  Matrizes necessarias ao PZT 
 !
 et,1,PLANE223,1001,,0                      ! Elemento 2D piezoeletrico, Estado plano de tensao
 mp,DENS,1,1e3                              ! Densidade, kg/m3
@@ -48,7 +48,7 @@ mp,DENS,2,1e3                              ! Densidade, kg/m3
 mp,EX,2,1e9                                ! Modulo de Elasticidade, N/m2
 mp,NUXY,2,0.3                              ! Coeficiente de Poisson
 !
-!   - Construcao das areas e controle da malha
+!  Construcao das areas e controle da malha
 !
 local,11                                   ! Sistema de coordenadas
 rectng,Dpzt,Lpzt+Dpzt,-Hpzt,         0     ! Area para o PZT inferior
@@ -61,7 +61,7 @@ amesh,1,3                                  ! Gera a malha de area para os dois d
 type,2                                     ! Atribui o elemento tipo 2 (estrutural)
 amesh,4                                    ! Gera a malha para a viga
 !
-!   - Condicoes de contorno
+!  Condicoes de contorno
 !
 ! Engaste da viga
 nsel,s,loc,x,0                             ! Seleciona os nos
@@ -96,7 +96,7 @@ cm,Vsensor,node                            ! Reune a selecao de nos no parametro
 nsel,all                                   ! Reseleciona todos os nos
 finish
 !
-!   - Analise modal
+!  Analise modal
 !
 /SOLU                                      ! Analise modal para obtencao das frequencias e modos de vibracao
 antype,modal                               ! Utilizada para definir o passo de integracao na analise transiente
@@ -106,7 +106,7 @@ outres,all
 solve
 finish
 !
-!   - Pos-processamento da analise modal
+!  Pos-processamento da analise modal
 !
 /post1
 set,list                                   ! Lista as frequencias associadas aos modos
@@ -124,7 +124,7 @@ set,next
 pldisp,0                                   ! Plotagem do quarto modo
 fini
 !
-!   - Analise Estatica
+!  Analise Estatica
 !
 /SOLU                                      ! Analise estatica para checar a voltagem no sensor
 antype,static,new
@@ -138,13 +138,13 @@ cnvtol,CHRG,1.e-8,1.e-3                    ! Limite para a convergencia da carga
 solve
 fini
 !
-!   - Pos-processamento da analise estatica
+!  Pos-processamento da analise estatica
 !
 /post1
 plnsol,volt,,0                             ! Plota o contorno da deformacao com a voltagem gerada no PZT
 fini
 !
-!   - Analise transiente
+!  Analise transiente
 !
 
 
