@@ -1,5 +1,6 @@
-/title, Piezoelectric Beam
+/title, Piezoelectric Beam !Titulo da simulacao
 /nopr
+/units,si
 
 /PREP7 !Pre-processamento
 !
@@ -7,150 +8,132 @@
 !
 !   - Geometria
 !
-Lbeam  =  100.0e-3        ! Comprimento da viga, m
-Hbeam  =    0.5e-3        ! Espessura da viga, m
-Hpzt   =    0.5e-3			  ! Espessura do PZT, m
-Dpzt   =   10.0e-3			  ! distancia do PZT ao engaste, m
-Lpzt   =   10.0e-3			  ! Comprimento do PZT, m
+Lbeam  =  100.0e-3                         ! Comprimento da viga, m
+Hbeam  =    0.5e-3                         ! Espessura da viga, m
+Hpzt   =    0.5e-3			                   ! Espessura do PZT, m
+Dpzt   =   10.0e-3			                   ! distancia do PZT ao engaste, m
+Lpzt   =   10.0e-3			                   ! Comprimento do PZT, m
 !
-!   - Carregamento
+!   - Variaveis para as propriedades materiais do PVDF 
 !
-V=100                           ! Voltagem do eletrodo, Volt
-Uy=10.e-3                       ! Deflexao na ponta da viga, m
-!
-!   - Propriedades materiais do PVDF 
-!
-E1=2.0e9                        ! Modulo de Elasticidade, N/m^2 
-NU12=0.29                       ! Coeficiente de Poisson
-G12=0.775e9                     ! Modulo de cisalhamento, N/m^2 
-d31=2.2e-11                     ! Coeficientes de tensao piezoeletrica, C/N
+E1=2.0e9                                   ! Modulo de Elasticidade, N/m^2 
+NU12=0.29                                  ! Coeficiente de Poisson
+G12=0.775e9                                ! Modulo de cisalhamento, N/m^2 
+d31=2.2e-11                                ! Coeficientes de tensao piezoeletrica, C/N
 d32=0.3e-11
 d33=-3.0e-11
-ept33=12                        ! Permissividade eletrica relativa com tensao constante 
-
+ept33=12                                   ! Permissividade eletrica relativa com tensao constante 
 !
-! Modelo de Elementos finitos
+!   - Matrizes necessarias ao PZT 
 !
-
+et,1,PLANE223,1001,,0                      ! Elemento 2D piezoeletrico, Estado plano de tensao
+mp,DENS,1,1e3                              ! Densidade, kg/m3
+tb,ANEL,1,,,1                              ! Matriz de compliance elastica
+tbda,1,1/E1,-NU12/E1,-NU12/E1
+tbda,7,1/E1,-NU12/E1
+tbda,12,1/E1
+tbda,16,1/G12
+tb,PIEZ,1,,,1                              ! Matriz de tensao piezoeletrica
+tbda,2,d31
+tbda,5,d33
+tbda,8,d32
+tb,DPER,1,,,1                              ! Permissividade a tensao constante
+tbdata,1,ept33,ept33
+tblist,all                                 ! Listagem das matrizes
+!
+!   - Propriedades materiais da viga 
+!
+et,2,PLANE183			                         ! Elemento estrutural 2D, Estado plano de tensao
+mp,DENS,2,1e3                              ! Densidade, kg/m3
+mp,EX,2,1e9                                ! Modulo de Elasticidade, N/m2
+mp,NUXY,2,0.3                              ! Coeficiente de Poisson
+!
+!   - Construcao das areas e controle da malha
+!
 local,11                                   ! Sistema de coordenadas
 rectng,Dpzt,Lpzt+Dpzt,-Hpzt,         0     ! Area para o PZT inferior
 rectng,   0,    Lbeam,    0,     Hbeam     ! Area para a viga
 rectng,Dpzt,Lpzt+Dpzt,Hbeam,Hbeam+Hpzt     ! Area para o PZT superior
 aglue,all                                  ! Juncao das areas
 esize,Hpzt                                 ! Tamanho do elemento utilizado
-
-
-
-et,1,PLANE223,1001,,0           ! Elemento 2D piezoeletrico, Estado plano de tensao
-mp,DENS,1,1e3                   ! Densidade, kg/m3
-tb,ANEL,1,,,1                   ! Matriz de compliance elastica
-tbda,1,1/E1,-NU12/E1,-NU12/E1
-tbda,7,1/E1,-NU12/E1
-tbda,12,1/E1
-tbda,16,1/G12
-tb,PIEZ,1,,,1                   ! Matriz de tensao piezoeletrica
-tbda,2,d31
-tbda,5,d33
-tbda,8,d32
-tb,DPER,1,,,1                   ! Permissividade a tensao constante
-tbdata,1,ept33,ept33
-tblist,all                      ! Listagem das matrizes
-!
-!   - Propriedades materiais da viga 
-!
-et,2,PLANE183			! Elemento estrutural 2D, Estado plano de tensao
-mp,DENS,2,1e3     ! Densidade, kg/m3
-mp,EX,2,1e9       ! Modulo de Elasticidade, N/m2
-mp,NUXY,2,0.3     ! Coeficiente de Poisson
-
-
-type,1            ! Atribui o elemento tipo 1 (piezoeletrico)
-amesh,1,3         ! Gera a malha de area para os dois dominios de PZT
-type,2            ! Atribui o elemento tipo 2 (estrutural)
-amesh,4           ! Gera a malha para a viga
-
+type,1                                     ! Atribui o elemento tipo 1 (piezoeletrico)
+amesh,1,3                                  ! Gera a malha de area para os dois dominios de PZT
+type,2                                     ! Atribui o elemento tipo 2 (estrutural)
+amesh,4                                    ! Gera a malha para a viga
 !
 !   - Condicoes de contorno
 !
-
-!Engaste da viga
-nsel,s,loc,x,0    ! Seleciona os nos
-cm,Suporte,node
-d,all,ux,0        ! Atribui deflexao nula na direcao x
-d,all,uy,0        ! Atribui deflexao nula na direcao y
-nsel,all          ! Reseleciona todos os nos
-
-!Voltagem nula na superficie de contato superior
-nsel,s,loc,y,Hbeam                  
+! Engaste da viga
+nsel,s,loc,x,0                             ! Seleciona os nos
+cm,Suporte,node                            ! Reune a selecao de nos no parametro Suporte
+d,all,ux,0                                 ! Atribui deflexao nula na direcao x
+d,all,uy,0                                 ! Atribui deflexao nula na direcao y
+nsel,all                                   ! Reseleciona todos os nos
+! Voltagem nula na superficie de contato superior
+nsel,s,loc,y,Hbeam                         ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-d,all,volt,0
-nsel,all
-
-!Voltagem nula na superficie de contato inferior
-nsel,s,loc,y,0                  
+d,all,volt,0                               ! Atribui voltagem nula
+nsel,all                                   ! Reseleciona todos os nos
+! Voltagem nula na superficie de contato inferior
+nsel,s,loc,y,0                             ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-d,all,volt,0
-nsel,all
-
-!Selecao para voltagem de controle
-nsel,s,loc,y,Hbeam+Hpzt                  
+d,all,volt,0                               ! Atribui voltagem nula
+nsel,all                                   ! Reseleciona todos os nos
+! Selecao para voltagem de controle na superficie superior
+nsel,s,loc,y,Hbeam+Hpzt                    ! Seleciona os nos    
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-cm,Vcont,node
-nsel,all
-
+cm,Vcont,node                              ! Reune a selecao de nos no parametro Vcont
+nsel,all                                   ! Reseleciona todos os nos
 !Selecao para a forca aplicada na extremidade
-nsel,s,loc,x,Lbeam
+nsel,s,loc,x,Lbeam                         ! Seleciona os nos
 nsel,r,loc,y,Hbeam
-cm,Ftip,node
-nsel,all
-
-!Selecao para voltagem de controle
-nsel,s,loc,y,-Hpzt                  
+cm,Ftip,node                               ! Reune a selecao de nos no parametro Ftip
+nsel,all                                   ! Reseleciona todos os nos
+!Selecao para voltagem no sensor na superficie inferior
+nsel,s,loc,y,-Hpzt                         ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-cm,Vsensor,node
-nsel,all
-
+cm,Vsensor,node                            ! Reune a selecao de nos no parametro Vsensor
+nsel,all                                   ! Reseleciona todos os nos
 finish
 
-/SOLU
-antype,modal
-modopt,lanb,4
+/SOLU                                      ! Analise modal para obtencao das frequencias e modos de vibracao
+antype,modal                               ! Utilizada para definir o passo de integracao na analise transiente
+modopt,lanb,4                              ! Extracao dos 4 primeiros modos de vibracao
 mxpand,4
 outres,all
 solve
 finish
 
 /post1
-set,list
+set,list                                   ! Lista as frequencias associadas aos modos
 set,first
-*get,FREQ1,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
+*get,FREQ1,active,0,set,freq               ! Atribui a frequencia para a variavel FREQ1
+pldisp,0                                   ! Plotagem do primeiro modo
 set,next
-*get,FREQ2,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
+*get,FREQ2,active,0,set,freq               ! Atribui a frequencia para a variavel FREQ2
+pldisp,0                                   ! Plotagem do segundo modo
 set,next
-*get,FREQ3,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
+*get,FREQ3,active,0,set,freq               ! Atribui a frequencia para a variavel FREQ3
+pldisp,0                                   ! Plotagem do terceiro modo
 set,next
-*get,FREQ4,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
-set,next
-*get,FREQ5,active,0,set,freq
-pldisp,0 ! uncomment to plot the displacement
+*get,FREQ4,active,0,set,freq               ! Atribui a frequencia para a variavel FREQ4
+pldisp,0                                   ! Plotagem do quarto modo
 fini
 
-/SOLU 
+/SOLU                                      ! Analise estatica para checar a voltagem no sensor
 antype,static,new
-cmsel,s,Ftip
-F,all,FY,-1     !Forca em N
-nsel,all
-nlgeom,on ! Activate large deflections
-nsubs,2 ! Set number of substeps
-cnvtol,F,1.e-3,1.e-3 ! Set convergence for force
-cnvtol,CHRG,1.e-8,1.e-3 ! Set convergence for charge
+cmsel,s,Ftip                               ! Seleciona os nos no conjunto Ftip
+F,all,FY,-1                                ! Forca aplicada na direcao Y com 1N
+nsel,all                                   ! Reseleciona os nos
+nlgeom,on                                  ! Ativa o modo para calculo em grandes deflexoes
+nsubs,2                                    ! Numero de substeps
+cnvtol,F,1.e-3,1.e-3                       ! Limite para a convergencia da forca
+cnvtol,CHRG,1.e-8,1.e-3                    ! Limite para a convergencia da carga eletrica
 solve
 fini
 
 /post1
-plnsol,volt,,0
+plnsol,volt,,0                             ! Plota o contorno da deformacao com a voltagem gerada no PZT
 fini
+
+
