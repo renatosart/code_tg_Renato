@@ -28,8 +28,9 @@ ept33=12                                   ! Permissividade eletrica relativa co
 !   - Variaveis para a analise transiente
 alpha=0.5
 beta=alpha
-ks=0
-kc=0
+ks=1
+kc=1
+ts=3
 !
 !  Matrizes necessarias ao PZT 
 !
@@ -155,18 +156,24 @@ fini
 !
 /solu
 antype,transient
-trnopt,full           ! PERFORM MODE SUPERPOSITION TRANSIENT SOLVE
-deltim,1/(20*FREQ1)              ! INTEGRATION TIME STEP SIZE
+trnopt,full           
+deltim,1/(20*FREQ1)            
 alphad,alpha
 betad,beta
 outres,nsol,all
 outpr,nsol,all
-
+F,Tip,FY,-1
+time,1/(20*FREQ1)
+dt=1/(20*FREQ1)
 *do,t,2*dt,ts,dt
-*get,Vmed,node,nr,u,x
+cmsel,s,Vsencor
+*get,numbVmed,node,,num,max
+*get,Vmed,node,numbVmed,d,volt
 err=0-ks*Vmed
-va=kc*kv*err
-d,nv,volt,va
+va=kc*err
+nsel,all
+cmsel,Vcont
+d,all,volt,va
 time,t
 solve
 *enddo
