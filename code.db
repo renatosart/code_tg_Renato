@@ -28,8 +28,8 @@ ept33=12                                   ! Permissividade eletrica relativa co
 !   - Variaveis para a analise transiente
 alpha=0.5
 beta=alpha
-ks=1
-kc=1
+ks=0
+kc=0
 ts=3
 !
 !  Matrizes necessarias ao PZT 
@@ -165,14 +165,16 @@ outpr,nsol,all
 F,Tip,FY,-1
 time,1/(20*FREQ1)
 dt=1/(20*FREQ1)
+
+
 *do,t,2*dt,ts,dt
-cmsel,s,Vsencor
+cmsel,s,Vsensor
 *get,numbVmed,node,,num,max
 *get,Vmed,node,numbVmed,d,volt
 err=0-ks*Vmed
 va=kc*err
 nsel,all
-cmsel,Vcont
+cmsel,s,Vcont
 d,all,volt,va
 time,t
 solve
