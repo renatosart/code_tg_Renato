@@ -6,6 +6,7 @@
 !
 !  Definicao dos parametros
 !
+!
 !   - Geometria
 !
 Lbeam  =  100.0e-3                         ! Comprimento da viga, m
@@ -24,6 +25,12 @@ d32=0.3e-11
 d33=-3.0e-11
 ept33=12                                   ! Permissividade eletrica relativa com tensao constante 
 !
+!   - Variaveis para a analise transiente
+alpha=0.5
+beta=alpha
+ks=0
+kc=0
+!
 !  Matrizes necessarias ao PZT 
 !
 et,1,PLANE223,1001,,0                      ! Elemento 2D piezoeletrico, Estado plano de tensao
@@ -41,7 +48,7 @@ tb,DPER,1,,,1                              ! Permissividade a tensao constante
 tbdata,1,ept33,ept33
 tblist,all                                 ! Listagem das matrizes
 !
-!   - Propriedades materiais da viga 
+!  Propriedades materiais da viga 
 !
 et,2,PLANE183			                         ! Elemento estrutural 2D, Estado plano de tensao
 mp,DENS,2,1e3                              ! Densidade, kg/m3
@@ -146,18 +153,22 @@ fini
 !
 !  Analise transiente
 !
-/SOLU
-ANTYPE,TRANSIENT
-TRNOPT,full           ! PERFORM MODE SUPERPOSITION TRANSIENT SOLVE
-DELTIM,.003               ! INTEGRATION TIME STEP SIZE
-TIME,.003
-KBC,1                     ! STEP BOUNDARY CONDITIONS
-F,1,FY,30                 ! APPLY INITIAL FORCE
-OUTPR,BASIC,1
-OUTRES,NSOL,1
-SOLVE                     ! STATIC SOLUTION AT FIRST LOAD STEP
-TIME,.69                  ! TIME TO INCLUDE ALMOST FOUR CYCLES
-F,1,FY,0                  ! REMOVE FORCE
-SOLVE
-FINISH
+/solu
+antype,transient
+trnopt,full           ! PERFORM MODE SUPERPOSITION TRANSIENT SOLVE
+deltim,1/(20*FREQ1)              ! INTEGRATION TIME STEP SIZE
+alphad,alpha
+betad,beta
+outres,nsol,all
+outpr,nsol,all
+
+*do,t,2*dt,ts,dt
+*get,Vmed,node,nr,u,x
+err=0-ks*Vmed
+va=kc*kv*err
+d,nv,volt,va
+time,t
+solve
+*enddo
+finish
 
