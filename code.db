@@ -1,4 +1,4 @@
-/title, Piezoelectric Beam !Titulo da simulacao
+/title, Piezoelectric Beam
 /nopr
 /units,si
 
@@ -30,7 +30,7 @@ alpha=0.5
 beta=alpha
 ks=0
 kc=0
-ts=3
+ts=1
 !
 !  Matrizes necessarias ao PZT 
 !
@@ -160,11 +160,15 @@ trnopt,full
 deltim,1/(20*FREQ1)            
 alphad,alpha
 betad,beta
+kbc,0
 outres,nsol,all
 outpr,nsol,all
-F,Tip,FY,-1
 time,1/(20*FREQ1)
+F,Tip,FY,-1
+time,2*(1/(20*FREQ1))
+Fdele,Tip,all
 dt=1/(20*FREQ1)
+
 
 
 *do,t,2*dt,ts,dt
@@ -181,3 +185,10 @@ solve
 *enddo
 finish
 
+/post26
+file,,rsdp
+cmsel,s,Tip
+*get,numTip,node,,num,max
+nsol,deflTip,numTip,u,y
+store,merge
+plvar,defltip,
