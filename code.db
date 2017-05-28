@@ -26,11 +26,11 @@ d33=-3.0e-11
 ept33=12                                   ! Permissividade eletrica relativa com tensao constante 
 !
 !   - Variaveis para a analise transiente
-alpha=0.5
-beta=alpha
-ks=0
-kc=0
-ts=1
+!alpha=0.25
+!beta=alpha
+ks=1
+kc=1
+ts=5
 !
 !  Matrizes necessarias ao PZT 
 !
@@ -120,17 +120,68 @@ finish
 set,list                                   ! Lista as frequencias associadas aos modos
 set,first
 *get,FREQ1,active,0,set,freq               ! Atribui a frequencia para a variavel FREQ1
-pldisp,0                                   ! Plotagem do primeiro modo
+!pldisp,0                                   ! Plotagem do primeiro modo
 set,next
 *get,FREQ2,active,0,set,freq               ! Atribui a frequencia para a variavel FREQ2
-pldisp,0                                   ! Plotagem do segundo modo
+!pldisp,0                                   ! Plotagem do segundo modo
 set,next
 *get,FREQ3,active,0,set,freq               ! Atribui a frequencia para a variavel FREQ3
-pldisp,0                                   ! Plotagem do terceiro modo
+!pldisp,0                                   ! Plotagem do terceiro modo
 set,next
 *get,FREQ4,active,0,set,freq               ! Atribui a frequencia para a variavel FREQ4
-pldisp,0                                   ! Plotagem do quarto modo
+!pldisp,0                                   ! Plotagem do quarto modo
 fini
+!
+!  Analise transiente
+!
+/solu
+antype,transient
+trnopt,full           
+deltim,1/(20*FREQ1)            
+!alphad,alpha
+!betad,beta
+outres,nsol,all
+outpr,nsol,all
+dt=1/(20*FREQ1)
+
+F,567,FY,-1
+kbc,1
+time,dt
+solve
+
+!F,567,FY,0
+!kbc,1
+!time,2*dt
+!solve
+
+
+!F,567,FY,0
+!kbc,0
+!time,ts
+!solve
+
+
+*do,t,2*dt,ts,dt
+!cmsel,s,Vsensor
+!*get,numbVmed,node,,num,max
+*get,Vmed,node,2,d,volt
+err=0-ks*Vmed
+va=kc*(-err)
+
+!cmsel,s,Vcont
+d,145,volt,va
+time,t
+solve
+*enddo
+finish
+
+/post26
+cmsel,s,Tip
+*get,numTip,node,,num,max
+nsol,deflTip,numTip,u,y
+store,merge
+plvar,deflTip,
+
 !
 !  Analise Estatica
 !
@@ -151,44 +202,3 @@ fini
 /post1
 plnsol,volt,,0                             ! Plota o contorno da deformacao com a voltagem gerada no PZT
 fini
-!
-!  Analise transiente
-!
-/solu
-antype,transient
-trnopt,full           
-deltim,1/(20*FREQ1)            
-alphad,alpha
-betad,beta
-kbc,0
-outres,nsol,all
-outpr,nsol,all
-time,1/(20*FREQ1)
-F,Tip,FY,-1
-time,2*(1/(20*FREQ1))
-Fdele,Tip,all
-dt=1/(20*FREQ1)
-
-
-
-*do,t,2*dt,ts,dt
-cmsel,s,Vsensor
-*get,numbVmed,node,,num,max
-*get,Vmed,node,numbVmed,d,volt
-err=0-ks*Vmed
-va=kc*err
-nsel,all
-cmsel,s,Vcont
-d,all,volt,va
-time,t
-solve
-*enddo
-finish
-
-/post26
-file,,rsdp
-cmsel,s,Tip
-*get,numTip,node,,num,max
-nsol,deflTip,numTip,u,y
-store,merge
-plvar,defltip,
