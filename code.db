@@ -30,7 +30,7 @@ ept33=12                                   ! Permissividade eletrica relativa co
 !beta=alpha
 ks=1
 kc=1
-ts=5
+ts=3
 !
 !  Matrizes necessarias ao PZT 
 !
@@ -145,6 +145,7 @@ outpr,nsol,all
 dt=1/(20*FREQ1)
 
 F,567,FY,-1
+d,all,volt,0
 kbc,1
 time,dt
 solve
@@ -166,7 +167,7 @@ solve
 !*get,numbVmed,node,,num,max
 *get,Vmed,node,2,d,volt
 err=0-ks*Vmed
-va=kc*(-err)
+va=kc*(err)
 
 !cmsel,s,Vcont
 d,145,volt,va
