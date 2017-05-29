@@ -160,11 +160,6 @@ fdele,567,all
 
 !F,567,FY,0
 !kbc,1
-!time,2*dt
-!solve
-
-!F,567,FY,0
-!kbc,1
 !time,ts
 !solve
 !finish
