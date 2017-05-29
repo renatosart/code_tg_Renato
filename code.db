@@ -77,30 +77,37 @@ cm,Suporte,node                            ! Reune a selecao de nos no parametro
 d,all,ux,0                                 ! Atribui deflexao nula na direcao x
 d,all,uy,0                                 ! Atribui deflexao nula na direcao y
 nsel,all                                   ! Reseleciona todos os nos
-! Voltagem nula na superficie de contato superior
+
+! Acoplagem na superficie de contato superior
 nsel,s,loc,y,Hbeam                         ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-cp,1,volt,all                              ! Atribui voltagem nula
+cp,1,volt,all                              ! Atribui o mesmo DOF para os nos
 nsel,all                                   ! Reseleciona todos os nos
-! Voltagem nula na superficie de contato inferior
+
+! Acoplagem na superficie de contato inferior
 nsel,s,loc,y,0                             ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-cp,2,volt,all                              ! Atribui voltagem nula
+cp,2,volt,all                              ! Atribui o mesmo DOF para os nos
 nsel,all                                   ! Reseleciona todos os nos
+
 ! Selecao para voltagem de controle na superficie superior
 nsel,s,loc,y,Hbeam+Hpzt                    ! Seleciona os nos    
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
 cm,Vcont,node                              ! Reune a selecao de nos no parametro Vcont
+cp,3,volt,all                              ! Atribui o mesmo DOF para os nos
 nsel,all                                   ! Reseleciona todos os nos
+
 !Selecao para a extremidade
 nsel,s,loc,x,Lbeam                         ! Seleciona os nos
 nsel,r,loc,y,Hbeam
-cm,Tip,node                               ! Reune a selecao de nos no parametro Tip
+cm,Tip,node                                ! Reune a selecao de nos no parametro Tip
 nsel,all                                   ! Reseleciona todos os nos
+
 !Selecao para voltagem no sensor na superficie inferior
 nsel,s,loc,y,-Hpzt                         ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
 cm,Vsensor,node                            ! Reune a selecao de nos no parametro Vsensor
+cp,4,volt,all                              ! Atribui o mesmo DOF para os nos
 nsel,all                                   ! Reseleciona todos os nos
 finish
 !
@@ -149,6 +156,7 @@ d,2,volt,0
 kbc,1
 time,dt
 solve
+fdele,567,all
 
 !F,567,FY,0
 !kbc,1
@@ -164,13 +172,11 @@ solve
 *do,t,2*dt,ts,dt
 !cmsel,s,Vsensor
 !*get,numbVmed,node,,num,max
-*get,Vmed,node,2,d,volt
-err=0-ks*Vmed
+*get,dispTip,node,567,d,uy
+err=0-ks*dispTip
 va=kc*(err)
-!F,567,FY,0
-!kbc,1
-!cmsel,s,Vcont
 d,145,volt,va
+d,2,volt,va
 time,t
 solve
 *enddo
