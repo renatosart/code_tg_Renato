@@ -103,7 +103,7 @@ nsel,r,loc,y,Hbeam
 cm,Tip,node                                ! Reune a selecao de nos no parametro Tip
 nsel,all                                   ! Reseleciona todos os nos
 
-!Selecao para voltagem no sensor na superficie inferior
+!Selecao para voltagem de controle na superficie inferior
 nsel,s,loc,y,-Hpzt                         ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
 cm,Vsensor,node                            ! Reune a selecao de nos no parametro Vsensor
