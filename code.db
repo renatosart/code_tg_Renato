@@ -183,10 +183,7 @@ solve
 finish
 
 /post26
-cmsel,s,Tip
-*get,numTip,node,,num,max
-nsol,deflTip,numTip,u,y
-store,merge
+nsol,deflTip,numTip,u,567
 plvar,deflTip,
 
 !
@@ -194,8 +191,8 @@ plvar,deflTip,
 !
 /SOLU                                      ! Analise estatica para checar a voltagem no sensor
 antype,static,new
-cmsel,s,Tip                                ! Seleciona os nos no conjunto Tip
-F,all,FY,-1                                ! Forca aplicada na direcao Y com 1N
+                                           ! Seleciona os nos no conjunto Tip
+F,567,FY,-1                                ! Forca aplicada na direcao Y com 1N
 nsel,all                                   ! Reseleciona os nos
 nlgeom,on                                  ! Ativa o modo para calculo em grandes deflexoes
 nsubs,2                                    ! Numero de substeps
