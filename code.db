@@ -26,9 +26,9 @@ d33=-3.0e-11
 ept33=12                                   ! Permissividade eletrica relativa com tensao constante 
 !
 !   - Variaveis para a analise transiente
-alpha=0.25
+alpha=0.0001
 beta=alpha
-ks=100
+ks=5
 kc=1/2
 ts=2
 !
@@ -154,7 +154,7 @@ outres,nsol,all
 outpr,nsol,all
 *get,yref,node,567,u,y
 
-F,567,FY,-1
+F,567,FY,-0.1
 d,nodePZTinf,volt,0
 d,nodePZTsup,volt,0
 kbc,1
@@ -167,11 +167,11 @@ solve
 !solve
 !finish
 
-va=0
-err=0
 *do,t,2*dt,ts,dt
-*get,dispTip,node,567,u,y
-err=ks*(yref-dispTip)
+!*get,dispTip,node,567,u,y
+*get,nsens1,node,387,u,x
+*get,nsens2,node,389,u,x
+err=0-ks*(nsens2-nsens1)/Hpzt
 va=kc*(err)
 d,nodePZTsup,volt,va
 d,nodePZTinf,volt,va
