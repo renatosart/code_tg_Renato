@@ -28,9 +28,9 @@ ept33=12                                   ! Permissividade eletrica relativa co
 !   - Variaveis para a analise transiente
 alpha=0.25
 beta=alpha
-ks=1
-kc=1
-ts=3
+ks=100
+kc=1/2
+ts=2
 !
 !  Matrizes necessarias ao PZT 
 !
@@ -81,13 +81,13 @@ nsel,all                                   ! Reseleciona todos os nos
 ! Acoplagem na superficie de contato superior
 nsel,s,loc,y,Hbeam                         ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-cp,1,volt,all                              ! Atribui o mesmo DOF para os nos
+d,all,volt,0
 nsel,all                                   ! Reseleciona todos os nos
 
 ! Acoplagem na superficie de contato inferior
 nsel,s,loc,y,0                             ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
-cp,2,volt,all                              ! Atribui o mesmo DOF para os nos
+d,all,volt,0                               ! Atribui o mesmo DOF para os nos
 nsel,all                                   ! Reseleciona todos os nos
 
 ! Selecao para voltagem de controle na superficie superior
@@ -95,6 +95,7 @@ nsel,s,loc,y,Hbeam+Hpzt                    ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
 cm,Vcont,node                              ! Reune a selecao de nos no parametro Vcont
 cp,3,volt,all                              ! Atribui o mesmo DOF para os nos
+*get,nodePZTsup,node,0,num,min
 nsel,all                                   ! Reseleciona todos os nos
 
 !Selecao para a extremidade
@@ -108,6 +109,7 @@ nsel,s,loc,y,-Hpzt                         ! Seleciona os nos
 nsel,r,loc,x,Dpzt,Dpzt+Lpzt
 cm,Vsensor,node                            ! Reune a selecao de nos no parametro Vsensor
 cp,4,volt,all                              ! Atribui o mesmo DOF para os nos
+*get,nodePZTinf,node,0,num,min
 nsel,all                                   ! Reseleciona todos os nos
 finish
 !
@@ -143,20 +145,21 @@ fini
 !
 /solu
 antype,transient
-trnopt,full           
-deltim,1/(20*FREQ1)            
-!alphad,alpha
-!betad,beta
+trnopt,full  
+dt=1/(20*FREQ1)
+deltim,dt            
+alphad,alpha
+betad,beta
 outres,nsol,all
 outpr,nsol,all
-dt=1/(20*FREQ1)
+*get,yref,node,567,u,y
 
 F,567,FY,-1
-d,2,volt,0
+d,nodePZTinf,volt,0
+d,nodePZTsup,volt,0
 kbc,1
 time,dt
 solve
-fdele,567,all
 
 !F,567,FY,0
 !kbc,1
@@ -164,18 +167,19 @@ fdele,567,all
 !solve
 !finish
 
+va=0
+err=0
 *do,t,2*dt,ts,dt
-!cmsel,s,Vsensor
-!*get,numbVmed,node,,num,max
-*get,dispTip,node,567,d,uy
-err=0-ks*dispTip
+*get,dispTip,node,567,u,y
+err=ks*(yref-dispTip)
 va=kc*(err)
-d,145,volt,va
-d,2,volt,va
+d,nodePZTsup,volt,va
+d,nodePZTinf,volt,va
 time,t
 solve
 *enddo
 finish
+
 
 /post26
 nsol,deflTip,numTip,u,567
@@ -187,7 +191,9 @@ plvar,deflTip,
 /SOLU                                      ! Analise estatica para checar a voltagem no sensor
 antype,static,new
                                            ! Seleciona os nos no conjunto Tip
-F,567,FY,-1                                ! Forca aplicada na direcao Y com 1N
+F,567,FY,1                                 ! Forca aplicada na direcao Y com 1N
+!d,nodePZTinf,volt,6
+!d,nodePZTsup,volt,6
 nsel,all                                   ! Reseleciona os nos
 nlgeom,on                                  ! Ativa o modo para calculo em grandes deflexoes
 nsubs,2                                    ! Numero de substeps
