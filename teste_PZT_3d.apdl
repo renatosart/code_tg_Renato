@@ -1,0 +1,272 @@
+/title, Piezoelectric Beam 3D
+/nopr
+/units,si
+
+/PREP7 !Pre-processamento
+!
+!  Definicao dos parametros
+!
+!
+!   - Geometria
+!
+Lbeam  =  100.0e-3  ! Comprimento da viga, m
+Hbeam  =    0.5e-3  ! Espessura da viga, m
+Hpzt   =    0.5e-3  ! Espessura do PZT, m
+Dpzt   =   10.0e-3  ! distancia do PZT ao engaste, m
+Lpzt   =   10.0e-3  ! Comprimento do PZT, m
+Tpzt   =    5.0e-3  ! Largura do PZT, m
+
+!
+!   - Variaveis Materiais
+!
+!   - Variaveis para a analise transiente
+alpha=0.0001
+beta=alpha
+ks=5
+kc=1/2
+ts=2
+
+!  Beam
+Ebeam      =   68.0e+9
+DensBeam   =   2.8e+3
+poissonBeam=   0.32
+
+!  PZT
+densPZT =  7.5e+3  
+Permx   = 15.03e-9
+Permy   = 15.03e-9  
+Permz   = 13.00e-9 
+
+!
+!  Materiais
+!
+
+! Material 1 - Aluminio
+mp,ex,1,Ebeam         ! Modulo de elasticidade da viga, Pa 
+mp,dens,1,DensBeam    ! Densidade da viga, kg/m3
+mp,nuxy,1,poissonBeam ! Coeficiente de Poisson 
+
+! Material 2 - PZT
+mp,dens,2,densPZT ! Densidade do pzt, kg/m3
+mp,perx,2,Permx   ! Permissividade eletrica em x, F/m 
+mp,pery,2,Permy   ! Permissividade eletrica em y, F/m
+mp,perz,2,Permz   ! Permissividade eletrica em z, F/m 
+
+tb,piez,2     ! Matriz Piezoeletrica 
+tbdata,1,17   ! E16 piezoelectric constant 
+tbdata,14,17  ! E25 
+tbdata,3,-6.5 ! E31 
+tbdata,6,-6.5 ! E32 
+tbdata,9,23.3 ! E33 
+
+tb,anel,2                     ! Matriz de Elasticidade Anisotropica 
+tbdata,1, 126E9,79.5E9,84.1E9 ! C11,C12,C13 
+tbdata,7, 126E9,84.1E9        ! C22,C23 
+tbdata,12,117E9               ! C33 
+tbdata,16,23.3E9              ! C44 
+tbdata,19,23E9                ! C55 
+tbdata,21,23E9                ! C66
+
+tblist,all !Listagem das matrizes dos materiais
+
+!Element types
+et,1,solid186      ! Elemento estrutural tridimensional de 20 nos
+et,2,solid226,1001 ! Elemento com acoplamento de campos de 20 nos
+
+!
+!  Construcao dos volumes e controle da malha
+!
+
+! Pontos
+k, 1,0        ,0         ,0
+k, 2,0        ,Hbeam     ,0
+k, 3,0        ,0         ,Tpzt
+k, 4,0        ,Hbeam     ,Tpzt
+K, 5,Dpzt     ,0         ,0
+K, 6,Dpzt     ,Hbeam     ,0
+k, 7,Dpzt     ,0         ,Tpzt
+k, 8,Dpzt     ,Hbeam     ,Tpzt
+k, 9,Dpzt     ,Hbeam+Hpzt,0
+k,10,Dpzt     ,Hbeam+Hpzt,Tpzt
+k,11,Dpzt     ,-Hpzt     ,0
+k,12,Dpzt     ,-Hpzt     ,Tpzt
+K,13,Dpzt+Lpzt,0         ,0
+K,14,Dpzt+Lpzt,Hbeam     ,0
+k,15,Dpzt+Lpzt,0         ,Tpzt
+k,16,Dpzt+Lpzt,Hbeam     ,Tpzt
+k,17,Dpzt+Lpzt,Hbeam+Hpzt,0
+k,18,Dpzt+Lpzt,Hbeam+Hpzt,Tpzt
+k,19,Dpzt+Lpzt,-Hpzt     ,0
+k,20,Dpzt+Lpzt,-Hpzt     ,Tpzt
+k,21,Lbeam    ,0         ,0
+k,22,Lbeam    ,Hbeam     ,0
+k,23,Lbeam    ,0         ,Tpzt
+k,24,Lbeam    ,Hbeam     ,Tpzt
+
+!Volumes
+v,1,3,7,5,2,4,8,6
+v,5,7,15,13,6,8,16,14
+v,13,15,23,21,14,16,24,22
+v,6,8,16,14,9,10,18,17
+v,11,12,20,19,5,7,15,13
+vglue,all
+
+mshkey,2    ! Atribui Mapped meshing se possivel
+esize,Hpzt  ! Tamanho do elemento utilizado
+type,1      ! Atribui o elemento tipo 1 estrutural
+mat,1       ! Atribui o material 1 Aluminio
+vmesh,1
+vmesh,2
+vmesh,3     
+type,2      ! Atribui o elemento tipo 2 acoplamento
+mat,2       ! Atribui o material 2 PZT
+vmesh,4
+vmesh,5    
+
+!
+!  Condicoes de contorno
+!
+
+! Engaste da viga
+nsel,s,loc,x,0   ! Seleciona os nos
+cm,Suporte,node  ! Reune a selecao de nos no parametro Suporte
+d,all,ux,0       ! Atribui deflexao nula na direcao x
+d,all,uy,0       ! Atribui deflexao nula na direcao z
+d,all,uz,0       ! Atribui deflexao nula na direcao z
+nsel,all         ! Reseleciona todos os nos
+
+! Acoplagem na superficie de contato superior
+nsel,s,loc,y,Hbeam           ! Seleciona os nos
+nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+d,all,volt,0                 ! Aplica voltagem nula
+nsel,all                     ! Reseleciona todos os nos
+
+! Acoplagem na superficie de contato inferior
+nsel,s,loc,y,0               ! Seleciona os nos
+nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+d,all,volt,0                 ! Aplica voltagem nula
+nsel,all                     ! Reseleciona todos os nos
+
+! Selecao para voltagem de controle na superficie superior
+nsel,s,loc,y,Hbeam+Hpzt      ! Seleciona os nos    
+nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+cm,Vcont,node                ! Reune a selecao de nos no parametro Vcont
+cp,3,volt,all                ! Atribui o mesmo DOF para os nos
+*get,nodePZTsup,node,0,num,min
+nsel,all                     ! Reseleciona todos os nos
+
+!Selecao para a extremidade
+nsel,s,loc,x,Lbeam           ! Seleciona os nos
+nsel,r,loc,y,Hbeam
+cm,Tip,node                  ! Reune a selecao de nos no parametro Tip
+nsel,all                     ! Reseleciona todos os nos
+
+!Selecao para voltagem de controle na superficie inferior
+nsel,s,loc,y,-Hpzt           ! Seleciona os nos
+nsel,r,loc,x,Dpzt,Dpzt+Lpzt
+cm,Vsensor,node              ! Reune a selecao de nos no parametro Vsensor
+cp,4,volt,all                ! Atribui o mesmo DOF para os nos
+*get,nodePZTinf,node,0,num,min
+nsel,all                     ! Reseleciona todos os nos
+
+finish
+
+!
+!  Analise modal
+!
+
+/SOLU          ! Analise modal para obtencao das frequencias e modos de vibracao
+antype,modal   ! Utilizada para definir o passo de integracao na analise transiente
+modopt,lanb,4  ! Extracao dos 4 primeiros modos de vibracao
+mxpand,4
+outres,all
+solve
+finish
+
+!
+!  Pos-processamento da analise modal
+!
+
+/post1
+set,list                     ! Lista as frequencias associadas aos modos
+set,first
+*get,FREQ1,active,0,set,freq ! Atribui a frequencia para a variavel FREQ1
+!pldisp,0                    ! Plotagem do primeiro modo
+set,next
+*get,FREQ2,active,0,set,freq ! Atribui a frequencia para a variavel FREQ2
+!pldisp,0                    ! Plotagem do segundo modo
+set,next
+*get,FREQ3,active,0,set,freq ! Atribui a frequencia para a variavel FREQ3
+!pldisp,0                    ! Plotagem do terceiro modo
+set,next
+*get,FREQ4,active,0,set,freq ! Atribui a frequencia para a variavel FREQ4
+!pldisp,0                    ! Plotagem do quarto modo
+fini
+
+!
+!  Analise transiente
+!
+
+/solu
+antype,transient
+trnopt,full  
+dt=1/(20*FREQ1) ! Passo da analise transiente
+deltim,dt            
+alphad,alpha    ! Coeficientes de Rayleigh
+betad,beta
+outres,nsol,all
+outpr,nsol,all
+*get,yref,node,567,u,y
+F,567,FY,-0.1
+d,nodePZTinf,volt,0
+d,nodePZTsup,volt,0
+kbc,1
+time,dt
+solve
+
+!F,567,FY,0
+!kbc,1
+!time,ts
+!solve
+!finish
+
+*do,t,2*dt,ts,dt
+!*get,dispTip,node,567,u,y
+*get,nsens1,node,387,u,x
+*get,nsens2,node,389,u,x
+err=0-ks*(nsens2-nsens1)/Hpzt
+va=kc*(err)
+d,nodePZTsup,volt,va
+d,nodePZTinf,volt,va
+time,t
+solve
+*enddo
+finish
+
+/post26
+nsol,deflTip,numTip,u,567
+plvar,deflTip,
+
+!
+!  Analise Estatica
+!
+
+/SOLU                                      ! Analise estatica para checar a voltagem no sensor
+antype,static,new
+                                           ! Seleciona os nos no conjunto Tip
+F,567,FY,1                                 ! Forca aplicada na direcao Y com 1N
+!d,nodePZTinf,volt,6
+!d,nodePZTsup,volt,6
+nsel,all                                   ! Reseleciona os nos
+nlgeom,on                                  ! Ativa o modo para calculo em grandes deflexoes
+nsubs,2                                    ! Numero de substeps
+cnvtol,F,1.e-3,1.e-3                       ! Limite para a convergencia da forca
+cnvtol,CHRG,1.e-8,1.e-3                    ! Limite para a convergencia da carga eletrica
+solve
+fini
+!
+!  Pos-processamento da analise estatica
+!
+/post1
+plnsol,volt,,0                             ! Plota o contorno da deformacao com a voltagem gerada no PZT
+fini
